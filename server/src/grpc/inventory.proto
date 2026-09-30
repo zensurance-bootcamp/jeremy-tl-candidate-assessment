@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package inventory;
+
+message AdjustStock {
+  string sku = 1;
+  int32 delta = 2;
+}
+
+message StockRequest {
+  repeated string skus = 1;
+}
+
+message StockReply {
+  message Item {
+    string sku = 1;
+    int32 stock = 2;
+  }
+  repeated Item items = 1;
+}
+
+message AdjustStockReply {
+  bool ok = 1;
+}
+
+service Inventory {
+  rpc AdjustStock(AdjustStock) returns (AdjustStockReply);
+  rpc GetStock(StockRequest) returns (StockReply);
+}

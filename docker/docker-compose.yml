@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+  server:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.dev
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/appdb
+      NODE_ENV: development
+      PORT: 3000
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../server/src:/app/src:ro
+      - ../server/package.json:/app/package.json:ro
+      - ../server/yarn.lock:/app/yarn.lock:ro
+      - ../server/tsconfig.json:/app/tsconfig.json:ro
+      - ../server/nest-cli.json:/app/nest-cli.json:ro
+      - ../server/ormconfig.ts:/app/ormconfig.ts:ro
+  client:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - server
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../client/src:/app/src:ro
+      - ../client/package.json:/app/package.json:ro
+      - ../client/yarn.lock:/app/yarn.lock:ro
+      - ../client/tsconfig.json:/app/tsconfig.json:ro
+      - ../client/vite.config.ts:/app/vite.config.ts:ro
+      - ../client/index.html:/app/index.html:ro
+volumes:
+  db_data:
